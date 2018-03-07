@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}</ProjectGuid>
+    <ProjectGuid>{5EE0722D-20A9-423E-844F-08CC9EA991EB}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JsonNetMessageFormatter</RootNamespace>
-    <AssemblyName>JsonNetMessageFormatter</AssemblyName>
+    <RootNamespace>WCFUtils.Usage</RootNamespace>
+    <AssemblyName>WCFUtils.Usage</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -52,16 +52,18 @@
   <ItemGroup>
     <Compile Include="DataContracts.cs" />
     <Compile Include="ITestService.cs" />
-    <Compile Include="NewtonsoftJsonBehavior.cs" />
-    <Compile Include="NewtonsoftJsonClientFormatter.cs" />
-    <Compile Include="NewtonsoftJsonDispatchFormatter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RawBodyWriter.cs" />
     <Compile Include="Service.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WCFUtils\WCFUtils.csproj">
+      <Project>{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}</Project>
+      <Name>WCFUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

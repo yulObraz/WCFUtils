@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonNetMessageFormatter", "JsonNetMessageFormatter\JsonNetMessageFormatter.csproj", "{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCFUtils", "WCFUtils\WCFUtils.csproj", "{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Usage", "Usage\Usage.csproj", "{5EE0722D-20A9-423E-844F-08CC9EA991EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}.Debug|x86.Build.0 = Debug|x86
 		{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}.Release|x86.ActiveCfg = Release|x86
 		{3C8DF9B5-BECF-4EC0-AA12-C9C78173E6BE}.Release|x86.Build.0 = Release|x86
+		{5EE0722D-20A9-423E-844F-08CC9EA991EB}.Debug|x86.ActiveCfg = Debug|x86
+		{5EE0722D-20A9-423E-844F-08CC9EA991EB}.Debug|x86.Build.0 = Debug|x86
+		{5EE0722D-20A9-423E-844F-08CC9EA991EB}.Release|x86.ActiveCfg = Release|x86
+		{5EE0722D-20A9-423E-844F-08CC9EA991EB}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

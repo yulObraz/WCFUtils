@@ -4,7 +4,7 @@ using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using System.ServiceModel.Web;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils
 {
     public class NewtonsoftJsonBehavior : WebHttpBehavior
     {

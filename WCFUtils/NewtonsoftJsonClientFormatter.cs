@@ -7,7 +7,7 @@ using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Xml;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils
 {
     class NewtonsoftJsonClientFormatter : IClientMessageFormatter
     {

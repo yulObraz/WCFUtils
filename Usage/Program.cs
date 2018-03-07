@@ -5,7 +5,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Text;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils.Usage
 {
     class Program
     {
@@ -68,6 +68,7 @@ namespace JsonNetMessageFormatter
 
         static void Main(string[] args)
         {
+            //netsh http add urlacl url=http://+:8080/ user=\Everyone
             string baseAddress = "http://" + Environment.MachineName + ":8000/Service";
             ServiceHost host = new ServiceHost(typeof(Service), new Uri(baseAddress));
             host.AddServiceEndpoint(typeof(ITestService), new BasicHttpBinding(), "soap");

@@ -1,7 +1,7 @@
 ﻿using System.ServiceModel.Channels;
 using System.Xml;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils
 {
     class RawBodyWriter : BodyWriter
     {

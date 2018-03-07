@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils.Usage
 {
     public class Service : ITestService
     {

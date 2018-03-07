@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.ServiceModel;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils.Usage
 {
     [DataContract]
     [Newtonsoft.Json.JsonObject(MemberSerialization = Newtonsoft.Json.MemberSerialization.OptIn)]

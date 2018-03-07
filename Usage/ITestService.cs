@@ -1,7 +1,7 @@
 ﻿using System.ServiceModel;
 using System.ServiceModel.Web;
 
-namespace JsonNetMessageFormatter
+namespace WCFUtils.Usage
 {
     [ServiceContract]
     public interface ITestService
