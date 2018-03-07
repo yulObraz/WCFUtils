@@ -6,13 +6,18 @@ using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Xml;
+using Newtonsoft.Json.Serialization;
+using System.Diagnostics;
 
 namespace WCFUtils
 {
     class NewtonsoftJsonClientFormatter : IClientMessageFormatter
     {
+        private static TraceSource traceSource = new TraceSource("WCFUtils");
+
         OperationDescription operation;
         Uri operationUri;
+        ServiceEndpoint endpoint;
         public NewtonsoftJsonClientFormatter(OperationDescription operation, ServiceEndpoint endpoint)
         {
             this.operation = operation;
@@ -21,10 +26,10 @@ namespace WCFUtils
             {
                 endpointAddress = endpointAddress + "/";
             }
-
             this.operationUri = new Uri(endpointAddress + operation.Name);
+            this.endpoint = endpoint;
         }
-
+        
         public object DeserializeReply(Message message, object[] parameters)
         {
             object bodyFormatProperty;
@@ -35,30 +40,39 @@ namespace WCFUtils
             }
 
             XmlDictionaryReader bodyReader = message.GetReaderAtBodyContents();
-            Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
+            Newtonsoft.Json.JsonSerializer serializer = endpoint.NewtonsoftSettings().JsonSerializer;
             bodyReader.ReadStartElement("Binary");
             byte[] body = bodyReader.ReadContentAsBase64();
-            using (MemoryStream ms = new MemoryStream(body))
-            {
-                using (StreamReader sr = new StreamReader(ms))
-                {
-                    Type returnType = this.operation.Messages[1].Body.ReturnValue.Type;
-                    return serializer.Deserialize(sr, returnType);
+            try {
+                using(MemoryStream ms = new MemoryStream(body)) {
+                    using(StreamReader sr = new StreamReader(ms)) {
+                        Type returnType = this.operation.Messages[1].Body.ReturnValue.Type;
+                        var result = serializer.Deserialize(sr, returnType);
+
+                        if(traceSource.Switch.ShouldTrace(TraceEventType.Information)) {
+                            traceSource.TraceEvent(TraceEventType.Information, 1004, System.Text.Encoding.UTF8.GetString(body));
+                        }
+
+                        return result;
+                    }
                 }
+            } catch {
+                traceSource.TraceEvent(TraceEventType.Error, 1005, System.Text.Encoding.UTF8.GetString(body));
+                throw;
             }
         }
 
         public Message SerializeRequest(MessageVersion messageVersion, object[] parameters)
         {
             byte[] body;
-            Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
+            Newtonsoft.Json.JsonSerializer serializer = endpoint.NewtonsoftSettings().JsonSerializer;
+            
             using (MemoryStream ms = new MemoryStream())
             {
                 using (StreamWriter sw = new StreamWriter(ms, Encoding.UTF8))
                 {
                     using (Newtonsoft.Json.JsonWriter writer = new Newtonsoft.Json.JsonTextWriter(sw))
                     {
-                        writer.Formatting = Newtonsoft.Json.Formatting.Indented;
                         if (parameters.Length == 1)
                         {
                             // Single parameter, assuming bare
@@ -70,7 +84,7 @@ namespace WCFUtils
                             for (int i = 0; i < this.operation.Messages[0].Body.Parts.Count; i++)
                             {
                                 writer.WritePropertyName(this.operation.Messages[0].Body.Parts[i].Name);
-                                serializer.Serialize(writer, parameters[0]);
+                                serializer.Serialize(writer, parameters[i]);
                             }
 
                             writer.WriteEndObject();
@@ -81,6 +95,9 @@ namespace WCFUtils
                         body = ms.ToArray();
                     }
                 }
+            }
+            if(traceSource.Switch.ShouldTrace(TraceEventType.Information)) {
+                traceSource.TraceEvent(TraceEventType.Information, 1004, System.Text.Encoding.UTF8.GetString(body));
             }
 
             Message requestMessage = Message.CreateMessage(messageVersion, operation.Messages[0].Action, new RawBodyWriter(body));

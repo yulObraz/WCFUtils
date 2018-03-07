@@ -3,11 +3,17 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using System.ServiceModel.Web;
+using System.Xml;
+using System.ServiceModel;
 
 namespace WCFUtils
 {
     public class NewtonsoftJsonBehavior : WebHttpBehavior
     {
+        /*public override void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) {
+            base.ApplyDispatchBehavior(endpoint, endpointDispatcher);
+            endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new HttpCachePolicyMessageInspector());
+        }*/
         public override void Validate(ServiceEndpoint endpoint)
         {
             base.Validate(endpoint);
@@ -39,21 +45,28 @@ namespace WCFUtils
                 return base.GetRequestDispatchFormatter(operationDescription, endpoint);
             }
 
-            return new NewtonsoftJsonDispatchFormatter(operationDescription, true);
+            return new NewtonsoftJsonDispatchFormatter(operationDescription, endpoint, true);
         }
 
         protected override IDispatchMessageFormatter GetReplyDispatchFormatter(OperationDescription operationDescription, ServiceEndpoint endpoint)
         {
-            if (operationDescription.Messages.Count == 1 || operationDescription.Messages[1].Body.ReturnValue.Type == typeof(void))
+            if (operationDescription.Messages.Count == 1 || operationDescription.Messages[1].Body.ReturnValue.Type == typeof(void)
+                 || operationDescription.Messages[1].Body.ReturnValue.Type == typeof(System.IO.Stream))
             {
                 return base.GetReplyDispatchFormatter(operationDescription, endpoint);
             }
             else
             {
-                return new NewtonsoftJsonDispatchFormatter(operationDescription, false);
+                return new NewtonsoftJsonDispatchFormatter(operationDescription, endpoint, false);
             }
         }
-
+        public override void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime) {
+            if(endpoint.Binding is WebHttpBinding && (endpoint.Binding as WebHttpBinding).Security.Transport.ClientCredentialType == HttpClientCredentialType.Basic) {
+                clientRuntime.MessageInspectors.Add(new NewtonsoftJsonBasicClientMessageInspector(endpoint));
+            }
+            clientRuntime.MessageInspectors.Add(new NewtonsoftJsonClientFaultMessageInspector(endpoint));
+            base.ApplyClientBehavior(endpoint, clientRuntime);
+        }
         protected override IClientMessageFormatter GetRequestClientFormatter(OperationDescription operationDescription, ServiceEndpoint endpoint)
         {
             if (operationDescription.Behaviors.Find<WebGetAttribute>() != null)
@@ -66,8 +79,7 @@ namespace WCFUtils
                 WebInvokeAttribute wia = operationDescription.Behaviors.Find<WebInvokeAttribute>();
                 if (wia != null)
                 {
-                    if (wia.Method == "HEAD")
-                    {
+                    if(wia.Method == "HEAD" || wia.Method == "GET") {
                         // essentially a GET operation
                         return base.GetRequestClientFormatter(operationDescription, endpoint);
                     }
@@ -85,7 +97,8 @@ namespace WCFUtils
 
         protected override IClientMessageFormatter GetReplyClientFormatter(OperationDescription operationDescription, ServiceEndpoint endpoint)
         {
-            if (operationDescription.Messages.Count == 1 || operationDescription.Messages[1].Body.ReturnValue.Type == typeof(void))
+            if (operationDescription.Messages.Count == 1 || operationDescription.Messages[1].Body.ReturnValue.Type == typeof(void)
+                || operationDescription.Messages[1].Body.ReturnValue.Type == typeof(System.IO.Stream))
             {
                 return base.GetReplyClientFormatter(operationDescription, endpoint);
             }
@@ -94,7 +107,24 @@ namespace WCFUtils
                 return new NewtonsoftJsonClientFormatter(operationDescription, endpoint);
             }
         }
-
+        protected override void AddServerErrorHandlers(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) {
+            //base.AddServerErrorHandlers(endpoint, endpointDispatcher);
+            //endpointDispatcher.ChannelDispatcher.ErrorHandlers.Clear();
+            endpointDispatcher.ChannelDispatcher.ErrorHandlers.Add(new NewtonsoftJsonErrorHandler(endpoint));
+        }
+        /*protected override void AddClientErrorInspector(ServiceEndpoint endpoint, ClientRuntime clientRuntime) {
+            //base.AddClientErrorInspector(endpoint, clientRuntime);
+            //clientRuntime.CallbackDispatchRuntime.ChannelDispatcher.ErrorHandlers.Add(new NewtonsoftJsonErrorHandler(endpoint));
+            base.AddClientErrorInspector(endpoint, clientRuntime);
+        }*/
+        protected virtual void AddClientErrorInspector(ServiceEndpoint endpoint, ClientRuntime clientRuntime) {
+            if(!this.FaultExceptionEnabled) {
+                clientRuntime.MessageInspectors.Add(new WebFaultClientMessageInspector());
+            } else {
+                clientRuntime.MessageVersionNoneFaultsEnabled = true;
+            }
+            //base.AddClientErrorInspector(endpoint, clientRuntime);
+        }
         private void ValidateOperation(OperationDescription operation)
         {
             if (operation.Messages.Count > 1)
@@ -106,8 +136,7 @@ namespace WCFUtils
             }
 
             string uriTemplate = this.GetUriTemplate(operation);
-            if (uriTemplate != null)
-            {
+            if(uriTemplate != null && !IsGetOperation(operation)) {
                 throw new InvalidOperationException("UriTemplate support not implemented in this behavior.");
             }
 
@@ -175,10 +204,27 @@ namespace WCFUtils
             WebInvokeAttribute wia = operation.Behaviors.Find<WebInvokeAttribute>();
             if (wia != null)
             {
-                return wia.Method == "HEAD";
+                return wia.Method == "HEAD" || wia.Method == "GET";
             }
 
             return false;
         }
     }
+    class WebFaultClientMessageInspector : IClientMessageInspector {
+        public virtual void AfterReceiveReply(ref Message reply, object correlationState) {
+            if(reply != null) {
+                HttpResponseMessageProperty prop = (HttpResponseMessageProperty)reply.Properties[HttpResponseMessageProperty.Name];
+                if(prop != null && prop.StatusCode == System.Net.HttpStatusCode.BadRequest) {
+                    throw new CommunicationException(prop.StatusDescription);
+                }
+                if(prop != null && prop.StatusCode == System.Net.HttpStatusCode.InternalServerError) {
+                    throw new CommunicationException(prop.StatusDescription);
+                }
+            }
+        }
+
+        public object BeforeSendRequest(ref Message request, IClientChannel channel) {
+            return null;
+        }
+    } 
 }

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace WCFUtils.Usage
 {
+    //[InjectableBehavior]
+    [LogErrorHandler]
+    //[System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class Service : ITestService
     {
         public Person GetPerson()
@@ -11,7 +14,7 @@ namespace WCFUtils.Usage
             {
                 FirstName = "First",
                 LastName = "Last",
-                BirthDate = new DateTime(1993, 4, 17, 2, 51, 37, 47, DateTimeKind.Local),
+                BirthDay = new DateTime(1993, 4, 17, 2, 51, 37, 47, DateTimeKind.Local),
                 Id = 0,
                 Pets = new List<Pet>
                 {
@@ -29,6 +32,15 @@ namespace WCFUtils.Usage
         public int Add(int x, int y)
         {
             return x + y;
+        }
+        public int AddGet(int x, int y) {
+            return Add(x, y);
+        }
+        public int Throw(int type) {
+            throw CommonFault.Exception(new CommonFault("Configuration error"));
+        }
+        public int ThrowGet(int type) {
+            return Throw(type);
         }
     }
 }
