@@ -10,5 +10,6 @@ Added extension point for settings for different capitalization styles.
 Service interface requires attributes with implicit limitations (I suppose it were possible to avoid them). But sample shows workable methods.
 
 ## License
-The original code samplesat https://code.msdn.microsoft.com/site/search?f%5B0%5D.Type=User&f%5B0%5D.Value=CarlosFigueira are published with Apache 2.0 licence. I don't want to add any limitations. 
+The original code samples at https://code.msdn.microsoft.com/site/search?f%5B0%5D.Type=User&f%5B0%5D.Value=CarlosFigueira are published with Apache 2.0 licence. I don't want to add any limitations. 
+
 Based on https://github.com/carlosfigueira/WCFSamples/tree/master/MessageFormatter/MessageFormatter
